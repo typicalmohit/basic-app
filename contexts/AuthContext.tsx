@@ -3,15 +3,18 @@ import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
 // Define types for user profile
-type UserProfile = {
-  name: string;
+interface UserProfile {
   id: string;
   email: string;
-  image?: string;
-  address?: string;
+  name: string;
+  country_code?: string;
   phone_number?: string;
+  address?: string;
+  gender?: string;
+  birthday?: Date;
+  image?: string;
   created_at: string;
-};
+}
 
 type AuthContextType = {
   session: Session | null;

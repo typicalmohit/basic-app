@@ -65,6 +65,13 @@ const Signup: React.FC = () => {
     }
   };
 
+  if (error) {
+    Toast.show({
+      type: "error",
+      message: error,
+    });
+  }
+
   return (
     <ScreenWrapper bg="white">
       <View style={styles.container as ViewStyle}>
@@ -183,7 +190,7 @@ const Signup: React.FC = () => {
           </Pressable>
         </View>
       </View>
-      <Toast message={error} isVisible={!!error} type="error" />
+      <Toast position="bottom" />
     </ScreenWrapper>
   );
 };

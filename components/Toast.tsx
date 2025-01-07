@@ -1,23 +1,51 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { hp, wp } from "@/helpers/common";
 import { theme } from "@/constants/theme";
 
 interface ToastProps {
-  message: string;
-  isVisible: boolean;
-  type?: "error" | "success";
+  position?: "top" | "bottom";
 }
 
-const Toast: React.FC<ToastProps> = ({
-  message,
-  isVisible,
-  type = "error",
-}) => {
-  const opacity = React.useRef(new Animated.Value(0)).current;
+interface ToastConfig {
+  type?: "error" | "success";
+  title?: string;
+  message: string;
+}
 
-  React.useEffect(() => {
-    if (isVisible) {
+interface ToastState extends ToastConfig {
+  visible: boolean;
+}
+
+const initialState: ToastState = {
+  visible: false,
+  message: "",
+  type: "error",
+};
+
+let toastRef: any = null;
+
+const Toast: React.FC<ToastProps> & { show: (config: ToastConfig) => void } = ({
+  position = "top",
+}) => {
+  const [state, setState] = useState<ToastState>(initialState);
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    toastRef = {
+      show: (config: ToastConfig) => {
+        setState({
+          visible: true,
+          message: config.message,
+          type: config.type || "error",
+          title: config.title,
+        });
+      },
+    };
+  }, []);
+
+  useEffect(() => {
+    if (state.visible) {
       Animated.sequence([
         Animated.timing(opacity, {
           toValue: 1,
@@ -30,21 +58,24 @@ const Toast: React.FC<ToastProps> = ({
           duration: 300,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]).start(() => {
+        setState((prev) => ({ ...prev, visible: false }));
+      });
     }
-  }, [isVisible]);
+  }, [state.visible]);
 
-  if (!isVisible) return null;
+  if (!state.visible) return null;
 
   return (
     <Animated.View
       style={[
         styles.container,
+        position === "bottom" ? styles.bottom : styles.top,
         { opacity },
-        type === "success" ? styles.success : styles.error,
+        state.type === "success" ? styles.success : styles.error,
       ]}
     >
-      <Text style={styles.text}>{message}</Text>
+      <Text style={styles.text}>{state.message}</Text>
     </Animated.View>
   );
 };
@@ -52,13 +83,18 @@ const Toast: React.FC<ToastProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: hp(12),
     left: wp(4),
     right: wp(4),
     backgroundColor: "rgba(255, 0, 0, 0.9)",
     padding: hp(2),
     borderRadius: theme.radius.sm,
     zIndex: 999,
+  },
+  top: {
+    top: hp(12),
+  },
+  bottom: {
+    bottom: hp(12),
   },
   text: {
     color: "white",
@@ -72,5 +108,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 180, 0, 0.9)",
   },
 });
+
+// Static method to show toast
+Toast.show = (config: ToastConfig) => {
+  if (toastRef) {
+    toastRef.show(config);
+  }
+};
 
 export default Toast;

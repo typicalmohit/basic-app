@@ -7,15 +7,13 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useAuth } from "@/contexts/AuthContext";
-import { validateEmail, validatePassword } from "@/helpers/validation";
+import { validateEmail, validatePassword } from "@/utils/validation";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Button from "@/components/Button";
 import { theme } from "@/constants/theme";
-import { authStyles as styles } from "@/styles/auth";
-import Toast from "@/components/Toast";
 
 const Login: React.FC = () => {
   const { signIn } = useAuth();
@@ -23,8 +21,8 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "mohit@k.com",
+    password: "123456",
   });
 
   const handleLogin = async () => {
@@ -52,11 +50,8 @@ const Login: React.FC = () => {
 
   return (
     <ScreenWrapper bg="white">
-      <View style={styles.container as ViewStyle}>
-        <Pressable
-          style={styles.backButton as ViewStyle}
-          onPress={() => router.back()}
-        >
+      <View style={styles.container}>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons
             name="arrow-back"
             size={24}
@@ -64,83 +59,138 @@ const Login: React.FC = () => {
           />
         </Pressable>
 
-        <View style={styles.headerContainer as ViewStyle}>
-          <Text style={styles.title as TextStyle}>Hey,</Text>
-          <Text style={[styles.title as TextStyle, { marginTop: -10 }]}>
-            Welcome Back
-          </Text>
-          <Text style={styles.subtitle as TextStyle}>
-            Please login to continue
-          </Text>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Hey,</Text>
+          <Text style={[styles.title, { marginTop: -10 }]}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Please login to continue</Text>
         </View>
 
-        <View style={styles.formContainer as ViewStyle}>
-          <View style={styles.inputContainer as ViewStyle}>
+        <View style={styles.formContainer}>
+          <View style={styles.inputContainer}>
             <MaterialIcons
-              name="mail"
+              name="email"
               size={20}
               color={theme.colors.textLight}
             />
             <TextInput
-              placeholder="Enter your email"
-              style={[styles.input as TextStyle, { includeFontPadding: false }]}
+              placeholder="Email"
+              style={styles.input}
               placeholderTextColor={theme.colors.textLight}
               value={formData.email}
               onChangeText={(text) =>
                 setFormData((prev) => ({ ...prev, email: text }))
               }
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
             />
           </View>
 
-          <View style={styles.inputContainer as ViewStyle}>
+          <View style={styles.inputContainer}>
             <MaterialIcons
               name="lock"
               size={20}
               color={theme.colors.textLight}
             />
             <TextInput
-              placeholder="Enter your password"
-              secureTextEntry
-              style={[styles.input as TextStyle, { includeFontPadding: false }]}
+              placeholder="Password"
+              style={styles.input}
               placeholderTextColor={theme.colors.textLight}
               value={formData.password}
               onChangeText={(text) =>
                 setFormData((prev) => ({ ...prev, password: text }))
               }
+              secureTextEntry
             />
           </View>
 
-          <Pressable
-            style={styles.forgotPassword as ViewStyle}
-            onPress={() => console.log("Forgot password")}
-          >
-            <Text style={styles.forgotPasswordText as TextStyle}>
-              Forgot Password?
-            </Text>
-          </Pressable>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <Button
             title="Login"
-            buttonStyle={styles.button as ViewStyle}
-            textStyle={styles.buttonText as TextStyle}
             onPress={handleLogin}
             loading={loading}
-            disabled={loading}
+            buttonStyle={styles.loginButton}
           />
-        </View>
 
-        <View style={styles.footer as ViewStyle}>
-          <Pressable onPress={() => router.push("/signup")}>
-            <Text style={styles.footerText as TextStyle}>
+          <Pressable
+            style={styles.signupButton}
+            onPress={() => router.push("/signup")}
+          >
+            <Text style={styles.signupText}>
               Don't have an account?{" "}
-              <Text style={styles.footerLink as TextStyle}>Sign up</Text>
+              <Text style={styles.signupLink}>Sign up</Text>
             </Text>
           </Pressable>
         </View>
       </View>
-      <Toast message={error} isVisible={!!error} type="error" />
     </ScreenWrapper>
   );
 };
+
+const styles = {
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  backButton: {
+    marginTop: 20,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerContainer: {
+    marginTop: 40,
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: theme.colors.textDark,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: theme.colors.textLight,
+    marginTop: 10,
+  },
+  formContainer: {
+    gap: 20,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.gray, // Changed from theme.colors.border to theme.colors.gray
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 48,
+  },
+  input: {
+    flex: 1,
+    marginLeft: 10,
+    color: theme.colors.textDark,
+    fontSize: 16,
+  },
+  errorText: {
+    color: theme.colors.rose,
+    fontSize: 14,
+  },
+  loginButton: {
+    marginTop: 20,
+  },
+  signupButton: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  signupText: {
+    fontSize: 14,
+    color: theme.colors.textLight,
+  },
+  signupLink: {
+    color: theme.colors.primary,
+    fontWeight: "bold",
+  },
+} as const;
 
 export default Login;
