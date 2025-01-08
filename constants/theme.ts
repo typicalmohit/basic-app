@@ -13,6 +13,25 @@ export const theme = {
     rose: "#EF4444",
     roseLight: "#F87171",
     background: "#FFFFFF",
+
+    // Status Colors
+    status: {
+      // Booking Status Colors
+      booked: "#bfdbfe", // Very Light Blue
+      confirmed: "#ddd6fe", // Very Light Purple
+      completed: "#bbf7d0", // Very Light Green
+      cancelled: "#fecaca", // Very Light Red
+
+      // Payment Status Colors
+      pending: "#fed7aa", // Very Light Orange
+      partial: "#ddd6fe", // Very Light Purple
+      paid: "#bbf7d0", // Very Light Green
+      unpaid: "#fecaca", // Very Light Red
+
+      // Oil Status Colors
+      included: "#bbf7d0", // Very Light Green
+      not_included: "#fed7aa", // Very Light Orange
+    },
   },
   fonts: {
     medium: "500",
@@ -21,11 +40,11 @@ export const theme = {
     extraBold: "800",
   },
   radius: {
-    xs: 10,
-    sm: 12,
-    md: 14,
-    lg: 16,
-    xl: 18,
-    xxl: 22,
+    xs: 12,
+    sm: 16,
+    md: 20,
+    lg: 24,
+    xl: 28,
+    xxl: 32,
   },
 };

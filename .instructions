@@ -1,0 +1,33 @@
+1. Session Management in AuthContext.tsx
+   Issue: The session management logic seems to be a bit convoluted. You are checking for a session and fetching user profiles, but you mentioned wanting to simplify this to always show the welcome screen.
+   Suggestion: Ensure that the session check is straightforward and that the user is redirected to the welcome screen without unnecessary checks.
+   Suggestion: Ensure that if the session is found, the user is redirected to the home page.If the session is not found, the user is redirected to the welcome screen but dont show the welcome screen if the user is already logged in and dont show the home page if the user is not logged in and dont make it infinite loop stuck in the loading state.
+2. Login Flow in app/login.tsx
+   Issue: The handleLogin function does not handle navigation after a successful login. The signIn function in AuthContext.tsx already handles navigation, so ensure that the login component does not need to handle it again.
+   Suggestion: Ensure that the signIn function is correctly called and that it handles navigation to the home page after a successful login.
+3. Redirect Logic in app/index.tsx
+   Issue: The Index component is set to redirect to the home page directly. This is fine, but ensure that the routing logic aligns with your app's flow.
+   Suggestion: If you want to show the welcome screen first, consider changing this to redirect to the welcome screen instead.
+4. Error Handling in app/(main)/bookings/new.tsx
+   Issue: The booking creation logic does not seem to have error handling for when the booking fails to save.
+   Suggestion: Add error handling to inform the user if the booking creation fails, similar to how you handle errors in the login process.
+5. Loading States
+   Issue: Ensure that loading states are consistently managed across components, especially during async operations like signing in or creating bookings.
+   Suggestion: Use a loading indicator to provide feedback to users during these operations.
+6. Component Structure
+   Issue: The ScreenWrapper and Button components are used correctly, but ensure that they are styled consistently and that their props are being passed correctly.
+   Suggestion: Review the styles in ScreenWrapper and Button to ensure they match the design requirements.
+7. Potential Redundant Code
+   Issue: The Welcome component is defined twice in the snippets provided. Ensure that you only have one definition to avoid confusion.
+   Suggestion: Remove any duplicate components and ensure that the correct one is being used throughout the app.
+8. Navigation Logic
+   Issue: Ensure that all navigation logic is consistent and that you are using the router from expo-router correctly.
+   Suggestion: Review all instances of router.push and router.replace to ensure they are used appropriately based on the desired navigation flow.
+9. Environment Variables
+   Issue: Ensure that your environment variables for Supabase are correctly set in your .env file and that they are being accessed properly in your code.
+   Suggestion: Double-check that the Supabase URL and anon key are correctly configured.
+10. General Code Quality
+    Issue: Ensure that your code is clean and follows best practices, such as consistent naming conventions and proper error handling.
+    Suggestion: Consider using TypeScript interfaces for props and state management to improve type safety and readability.
+    Summary
+    Make sure to address the above points to improve the overall functionality and user experience of your application. If you have specific areas you want to focus on or if you encounter any issues while implementing these suggestions, feel free to ask for further assistance!

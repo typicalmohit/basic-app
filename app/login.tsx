@@ -26,22 +26,23 @@ const Login: React.FC = () => {
   });
 
   const handleLogin = async () => {
+    console.log("Login: Starting login process");
     if (
       !formData.email ||
       !validateEmail(formData.email) ||
-      !formData.password ||
-      !validatePassword(formData.password)
+      !formData.password
     ) {
+      console.log("Login: Validation failed");
       setError("Please check your input fields");
       return;
     }
 
     try {
       setLoading(true);
+      console.log("Login: Calling signIn");
       await signIn(formData.email, formData.password);
-      router.replace("/(main)/home");
     } catch (error: any) {
-      console.log(error.message);
+      console.error("Login: Error during login:", error);
       setError(error.message);
     } finally {
       setLoading(false);

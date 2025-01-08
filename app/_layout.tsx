@@ -1,29 +1,31 @@
-import React from "react";
+import { useEffect } from "react";
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { PaperProvider } from "react-native-paper";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-const RootLayout: React.FC = () => {
+export default function RootLayout() {
   return (
     <PaperProvider>
-      <AuthProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: "slide_from_right",
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="welcome" />
-          <Stack.Screen name="login" />
-          <Stack.Screen name="signup" />
-          <Stack.Screen name="(main)" options={{ headerShown: false }} />
-        </Stack>
-      </AuthProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="signup" />
+            <Stack.Screen
+              name="(main)"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
+        </AuthProvider>
+      </SafeAreaProvider>
     </PaperProvider>
   );
-};
-
-export default RootLayout;
+}

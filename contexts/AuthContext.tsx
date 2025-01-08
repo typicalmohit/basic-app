@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
+import { useRouter } from "expo-router";
+import Toast from "@/components/Toast";
 
 // Define types for user profile
 interface UserProfile {
@@ -35,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Fetch user profile data
   const fetchUserProfile = async (userId: string) => {
@@ -52,29 +55,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Initialize auth state
   useEffect(() => {
-    // Check active sessions and subscribe to auth changes
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log("Auth state changed:", event);
+      setSession(currentSession);
+
+      if (currentSession?.user) {
+        await fetchUserProfile(currentSession.user.id);
+        if (event === "SIGNED_IN") {
+          router.replace("/(main)/home");
+        }
       } else {
         setUserProfile(null);
+        if (event === "SIGNED_OUT") {
+          router.replace("/");
+        }
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id);
+        router.replace("/(main)/home");
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
@@ -138,22 +153,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      console.log("Attempting sign in for:", email);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    // Fetch user profile after successful login
-    if (data.user) {
-      await fetchUserProfile(data.user.id);
+      // Set session and fetch user profile
+      if (data.user) {
+        setSession(data.session);
+        await fetchUserProfile(data.user.id);
+        console.log("Sign in successful, navigating to home");
+        router.replace("/(main)/home");
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      throw error;
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      setLoading(true);
+
+      // First clear the local state
+      setSession(null);
+      setUserProfile(null);
+
+      // Then attempt to sign out from Supabase
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.log("Supabase signOut error (ignored):", error);
+      }
+
+      // Navigate to welcome page
+      router.replace("/");
+    } catch (error: any) {
+      console.error("Sign out error:", error.message);
+      Toast.show({
+        type: "error",
+        message: "An error occurred while signing out",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {

@@ -1,23 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { List, Divider } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Toast from "@/components/Toast";
 
 export default function SettingsScreen() {
-  const router = useRouter();
-  const { signOut } = useAuth();
+  const { signOut, loading } = useAuth();
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.replace("/welcome");
     } catch (error) {
+      console.error("Error signing out:", error);
       Toast.show({
         type: "error",
-        title: "Error",
         message: "Failed to sign out",
       });
     }
@@ -74,6 +72,7 @@ export default function SettingsScreen() {
             left={(props) => <List.Icon {...props} icon="logout" color="red" />}
             onPress={handleSignOut}
             titleStyle={{ color: "red" }}
+            disabled={loading}
           />
         </List.Section>
       </ScrollView>

@@ -1,71 +1,86 @@
-import { Text, Pressable, StyleSheet } from "react-native";
 import React from "react";
+import {
+  StyleSheet,
+  Text,
+  Pressable,
+  ActivityIndicator,
+  ViewStyle,
+} from "react-native";
 import { theme } from "@/constants/theme";
-import { hp, wp } from "@/helpers/common";
 
 interface ButtonProps {
-  buttonStyle?: object;
-  textStyle?: object;
   title: string;
-  onPress?: () => void;
-  loading?: boolean;
-  hasShadow?: boolean;
+  onPress: () => void;
+  variant?: "primary" | "secondary";
   disabled?: boolean;
+  loading?: boolean;
+  buttonStyle?: ViewStyle;
 }
 
-const Button = ({
-  buttonStyle,
-  textStyle,
+const Button: React.FC<ButtonProps> = ({
   title,
-  onPress = () => {},
-  loading = false,
-  hasShadow = true,
+  onPress,
+  variant = "primary",
   disabled = false,
-}: ButtonProps) => {
+  loading = false,
+  buttonStyle,
+}) => {
   return (
     <Pressable
-      onPress={disabled ? undefined : onPress}
+      onPress={onPress}
+      disabled={disabled || loading}
       style={[
         styles.button,
-        buttonStyle,
-        hasShadow && styles.shadow,
+        variant === "primary" ? styles.primary : styles.secondary,
         disabled && styles.disabled,
+        buttonStyle,
       ]}
     >
-      <Text style={[styles.text, textStyle, { includeFontPadding: false }]}>
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          color={variant === "primary" ? "white" : theme.colors.primary}
+        />
+      ) : (
+        <Text
+          style={[
+            styles.buttonText,
+            variant === "secondary" && styles.secondaryText,
+          ]}
+        >
+          {title}
+        </Text>
+      )}
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    width: "100%",
-    padding: hp(2),
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: theme.radius.md,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
   },
-  text: {
+  primary: {
+    backgroundColor: theme.colors.primary,
+  },
+  secondary: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  buttonText: {
     color: "white",
-    fontSize: hp(2),
+    fontSize: 16,
     fontWeight: "600",
   },
-  shadow: {
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  secondaryText: {
+    color: theme.colors.primary,
   },
   disabled: {
-    backgroundColor: theme.colors.gray,
-    opacity: 0.7,
+    opacity: 0.5,
   },
 });
 

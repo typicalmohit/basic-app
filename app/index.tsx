@@ -1,27 +1,18 @@
-import { View, ActivityIndicator } from "react-native";
-import React, { useEffect } from "react";
-import { useRouter } from "expo-router";
-import ScreenWrapper from "@/components/ScreenWrapper";
-import { theme } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
+import Welcome from "@/components/Welcome";
+import LoadingScreen from "@/components/LoadingScreen";
+import { Redirect } from "expo-router";
 
-const Index: React.FC = () => {
-  const router = useRouter();
+export default function Index() {
+  const { session, loading } = useAuth();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace("/welcome");
-    }, 1000);
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
-    return () => clearTimeout(timer);
-  }, []);
+  if (session) {
+    return <Redirect href="/(main)/home" />;
+  }
 
-  return (
-    <ScreenWrapper bg="white">
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    </ScreenWrapper>
-  );
-};
-
-export default Index;
+  return <Welcome />;
+}

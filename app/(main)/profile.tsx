@@ -22,6 +22,7 @@ import ScreenWrapper from "@/components/ScreenWrapper";
 import Toast from "@/components/Toast";
 import { theme } from "@/constants/theme";
 import { hp, wp } from "@/helpers/common";
+import * as Contacts from "expo-contacts";
 
 interface PhoneNumber {
   id: string;
@@ -355,6 +356,34 @@ export default function ProfileScreen() {
     });
   };
 
+  const pickContact = async () => {
+    try {
+      const { status } = await Contacts.requestPermissionsAsync();
+      if (status === "granted") {
+        const result = await Contacts.getContactsAsync({
+          fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
+        });
+
+        if (result.data.length > 0) {
+          const contact = result.data[0];
+          const phoneNumber = contact.phoneNumbers?.[0]?.number || "";
+          const countryCode = "+91"; // Default country code, you might want to extract this from the phone number
+
+          setNewPhone({
+            ...newPhone,
+            number: phoneNumber.replace(countryCode, ""),
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error picking contact:", error);
+      Toast.show({
+        type: "error",
+        message: "Failed to access contacts",
+      });
+    }
+  };
+
   const renderPhoneSection = () => (
     <View style={styles.sectionContainer}>
       <Text style={styles.sectionTitle}>Phone Numbers</Text>
@@ -399,26 +428,35 @@ export default function ProfileScreen() {
         <View style={styles.addPhoneContainer}>
           <View style={styles.phoneInputContainer}>
             <TextInput
-              mode="outlined"
-              value={profile.countryCode}
-              onChangeText={(text) => {
-                console.log("Country code changed:", text); // Debug log
-                setProfile((prev) => ({ ...prev, countryCode: text }));
-              }}
               style={styles.countryCodeInput}
+              value={profile.countryCode}
+              onChangeText={(text) =>
+                setProfile((prev) => ({ ...prev, countryCode: text }))
+              }
               placeholder="+91"
+              keyboardType="phone-pad"
             />
-            <TextInput
-              mode="outlined"
-              value={newPhone.number}
-              onChangeText={(text) => {
-                console.log("Phone number changed:", text); // Debug log
-                setNewPhone((prev) => ({ ...prev, number: text }));
-              }}
-              placeholder="Phone number"
-              style={styles.phoneInput}
-              keyboardType="numeric"
-            />
+            <View style={styles.inputWithIcon}>
+              <TextInput
+                style={[styles.phoneInput, { flex: 1, marginBottom: 0 }]}
+                value={newPhone.number}
+                onChangeText={(text) =>
+                  setNewPhone((prev) => ({ ...prev, number: text }))
+                }
+                placeholder="Phone number"
+                keyboardType="phone-pad"
+              />
+              <Pressable
+                onPress={pickContact}
+                style={styles.contactPickerButton}
+              >
+                <MaterialIcons
+                  name="contacts"
+                  size={24}
+                  color={theme.colors.primary}
+                />
+              </Pressable>
+            </View>
           </View>
 
           <View style={styles.phoneTypeContainer}>
@@ -476,7 +514,7 @@ export default function ProfileScreen() {
             source={
               userProfile?.image
                 ? { uri: userProfile.image }
-                : require("@/assets/images/defaultUser.png")
+                : require("@/assets/images/default-user-image.png")
             }
             style={styles.profileImage}
           />
@@ -757,5 +795,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     gap: wp(2),
+  },
+  inputWithIcon: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  contactPickerButton: {
+    padding: 8,
+    marginLeft: 8,
   },
 });
