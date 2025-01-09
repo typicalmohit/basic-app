@@ -1,5 +1,5 @@
 import { Stack, Redirect } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -8,12 +8,16 @@ import Header from "@/components/Header";
 export default function MainLayout() {
   const { session, loading } = useAuth();
 
+  useEffect(() => {
+    console.log("[MainLayout] Auth state:", { session: !!session, loading });
+  }, [session, loading]);
+
   if (loading) {
     return <LoadingScreen />;
   }
 
   if (!session) {
-    return <Redirect href="/" />;
+    return <Redirect href="/login" />;
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,21 @@ const Home = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    console.log("[Home] Screen mounted");
+    return () => {
+      console.log("[Home] Screen unmounted");
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userProfile) {
+      console.log("[Home] No user profile, showing loading state");
+    } else {
+      console.log("[Home] User profile loaded:", userProfile.name);
+    }
+  }, [userProfile]);
+
   if (!userProfile) {
     return (
       <ScreenWrapper bg="white">
@@ -27,6 +42,16 @@ const Home = () => {
     );
   }
 
+  const handleNavigation = (route: string) => {
+    console.log("[Home] Navigating to:", route);
+    if (route === "bookings") {
+      router.push({ pathname: "/(main)/bookings" } as any);
+    } else {
+      alert("Coming Soon!");
+    }
+  };
+
+  console.log("[Home] Rendering main content");
   return (
     <ScreenWrapper bg="white">
       {/* Header with Avatar Menu */}
@@ -40,7 +65,7 @@ const Home = () => {
         {/* Booking Tracker */}
         <Pressable
           style={styles.optionCard}
-          onPress={() => router.push({ pathname: "/(main)/bookings" } as any)}
+          onPress={() => handleNavigation("bookings")}
         >
           <MaterialIcons name="directions-bus" size={32} color="#00C26F" />
           <Text style={styles.optionTitle}>Booking Tracker</Text>
@@ -52,7 +77,7 @@ const Home = () => {
         {/* Document Storage */}
         <Pressable
           style={styles.optionCard}
-          onPress={() => alert("Coming Soon!")}
+          onPress={() => handleNavigation("documents")}
         >
           <MaterialIcons name="folder" size={32} color="#00C26F" />
           <Text style={styles.optionTitle}>Document Storage</Text>

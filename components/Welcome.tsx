@@ -23,16 +23,6 @@ const Welcome: React.FC = () => {
     <ScreenWrapper bg="white">
       <StatusBar barStyle="dark-content" />
       <View style={styles.welcomeContainer as ViewStyle}>
-        <Pressable
-          style={styles.backButton as ViewStyle}
-          onPress={() => router.back()}
-        >
-          <MaterialIcons
-            name="arrow-back"
-            size={24}
-            color={theme.colors.textDark}
-          />
-        </Pressable>
         <Image
           style={styles.welcomeImage as ImageStyle}
           resizeMode="contain"
@@ -50,7 +40,6 @@ const Welcome: React.FC = () => {
         <Button
           title="Login"
           buttonStyle={styles.button}
-          textStyle={styles.buttonText}
           onPress={() => router.push("/login")}
         />
         <Pressable onPress={() => router.push("/signup")}>

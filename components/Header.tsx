@@ -96,6 +96,7 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
           onPress={() => {
             setMenuVisible(false);
             signOut();
+            router.push("/");
           }}
           title="Sign Out"
           leadingIcon="logout"

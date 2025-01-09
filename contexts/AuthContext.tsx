@@ -57,20 +57,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Initialize auth state
   useEffect(() => {
+    console.log("[AuthContext] Initializing auth state");
+    let isMounted = true;
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      console.log("Auth state changed:", event);
+      console.log("[AuthContext] Auth state changed:", {
+        event,
+        currentSession,
+      });
+
+      if (!isMounted) return;
       setSession(currentSession);
 
       if (currentSession?.user) {
+        console.log("[AuthContext] User found, fetching profile");
         await fetchUserProfile(currentSession.user.id);
         if (event === "SIGNED_IN") {
+          console.log("[AuthContext] User signed in, navigating to home");
           router.replace("/(main)/home");
         }
       } else {
+        console.log("[AuthContext] No user found, clearing profile");
         setUserProfile(null);
         if (event === "SIGNED_OUT") {
+          console.log("[AuthContext] User signed out, navigating to welcome");
           router.replace("/");
         }
       }
@@ -78,22 +90,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     // Initial session check
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id);
-        router.replace("/(main)/home");
+    const initSession = async () => {
+      try {
+        console.log("[AuthContext] Checking initial session");
+        const {
+          data: { session: currentSession },
+        } = await supabase.auth.getSession();
+        console.log("[AuthContext] Initial session result:", {
+          currentSession,
+        });
+
+        if (!isMounted) return;
+        setSession(currentSession);
+
+        if (currentSession?.user) {
+          console.log("[AuthContext] Initial user found, fetching profile");
+          await fetchUserProfile(currentSession.user.id);
+          // Remove the automatic navigation from here
+        }
+      } catch (error) {
+        console.error("[AuthContext] Error checking initial session:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    initSession();
 
     return () => {
+      console.log("[AuthContext] Cleaning up auth subscription");
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
+      console.log("[AuthContext] Starting signup process:", { email, name });
+      setLoading(true);
+
       // First, sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp(
         {
@@ -107,8 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       );
 
-      if (signUpError) throw signUpError;
-      if (!authData.user) throw new Error("Signup failed");
+      if (signUpError) {
+        console.error("[AuthContext] Signup error:", signUpError);
+        throw signUpError;
+      }
+      if (!authData.user) {
+        console.error("[AuthContext] Signup failed: No user data returned");
+        throw new Error("Signup failed");
+      }
+
+      console.log("[AuthContext] User created successfully:", authData.user.id);
 
       // Create user profile in the users table using upsert
       const { error: profileError } = await supabase.from("users").upsert(
@@ -124,10 +169,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       );
 
       if (profileError) {
-        console.error("Profile creation error:", profileError);
+        console.error("[AuthContext] Profile creation error:", profileError);
         await supabase.auth.signOut();
         throw new Error("Failed to create user profile");
       }
+
+      console.log("[AuthContext] User profile created successfully");
 
       // Verify the profile was created
       const { data: profile, error: verifyError } = await supabase
@@ -137,9 +184,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         .single();
 
       if (verifyError || !profile) {
+        console.error("[AuthContext] Profile verification error:", verifyError);
         await supabase.auth.signOut();
         throw new Error("Failed to verify user profile");
       }
+
+      console.log("[AuthContext] User profile verified successfully");
 
       // Set session and user profile
       setSession(authData.session);
@@ -147,30 +197,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       return;
     } catch (error: any) {
-      console.error("Signup error:", error.message);
+      console.error("[AuthContext] Signup process error:", error.message);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log("Attempting sign in for:", email);
+      console.log("[AuthContext] Starting sign in process for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[AuthContext] Sign in error:", error);
+        throw error;
+      }
 
       // Set session and fetch user profile
       if (data.user) {
+        console.log("[AuthContext] Sign in successful for user:", data.user.id);
         setSession(data.session);
         await fetchUserProfile(data.user.id);
-        console.log("Sign in successful, navigating to home");
+        console.log("[AuthContext] User profile fetched, navigating to home");
         router.replace("/(main)/home");
       }
     } catch (error) {
-      console.error("Sign in error:", error);
+      console.error("[AuthContext] Sign in process error:", error);
       throw error;
     }
   };
